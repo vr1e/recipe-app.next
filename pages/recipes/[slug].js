@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import {
 	sanityClient,
 	urlFor,
@@ -27,17 +28,15 @@ const recipeQuery = `*[_type == 'recipe' && slug.current == $slug][0]{
 
 export default function OneRecipe({ data, preview }) {
 	const router = useRouter();
-
-	if (router.isFallback) return <div>Loading...</div>;
-
+	const [likes, setLikes] = useState(data?.recipe?.likes);
 	const { data: recipe } = usePreviewSubscription(recipeQuery, {
 		params: { slug: data.recipe?.slug.current },
 		initialData: data,
 		enabled: preview,
 	});
 
-	const [likes, setLikes] = useState(data?.recipe?.likes);
-
+	if (router.isFallback) return <div>Loading...</div>;
+	
 	const addLike = async () => {
 		const res = await fetch('/api/handle-like', {
 			method: 'POST',
@@ -55,7 +54,7 @@ export default function OneRecipe({ data, preview }) {
 				{likes} 💖
 			</button>
 			<main className='content'>
-				<img src={urlFor(recipe?.mainImage).url()} alt={recipe?.name} />
+				<Image src={urlFor(recipe?.mainImage).url()} alt={recipe?.name} />
 				<div className='breakdown'>
 					<ul className='ingredients'>
 						{recipe.ingredient?.map(ingredient => (
